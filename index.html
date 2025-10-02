@@ -1,112 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHANALK Anime</title>
-<style>
-body {margin:0; font-family:Arial, sans-serif; background:#001100; color:#ffff66; padding:10px;}
-h1,h2 {text-align:center;}
-.container {max-width:700px; margin:auto;}
-input, textarea, button {width:100%; margin:5px 0; padding:10px; border-radius:10px; border:none;}
-input, textarea {background:#003300; color:#ffff66;}
-button {background:#00ff00; cursor:pointer; font-weight:bold;}
-button:hover{background:#ffff00;}
-.sub-card {background:#002200; margin:10px 0; padding:10px; border-radius:10px;}
-.sub-card img {max-width:100px; max-height:80px; float:left; margin-right:10px; border-radius:10px;}
-.comment{background:rgba(255,255,255,0.1); padding:5px; border-radius:5px; margin:3px 0;}
-.subtitle-text {color:#00ff00; white-space:pre-wrap; margin-top:5px; font-family:monospace; background:#003300; padding:5px; border-radius:5px;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SlCHANASUBLK - සිංහල උපසිරැසි</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #333;
+      color: white;
+      padding: 10px 0;
+      text-align: center;
+    }
+    .container {
+      width: 90%;
+      margin: 20px auto;
+    }
+    .subtitle-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .subtitle-card img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+    .subtitle-card h3 {
+      margin: 10px 0;
+      color: #0073e6;
+    }
+    .subtitle-card p {
+      font-size: 14px;
+      color: #666;
+    }
+    .download-btn {
+      background-color: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 10px;
+    }
+    .download-btn:hover {
+      background-color: #218838;
+    }
+  </style>
 </head>
 <body>
+
+<header>
+  <h1>SlCHANASUBLK</h1>
+  <p>සිංහල උපසිරැසි සමඟ නවතම චිත්‍රපට සහ රූපවාහිනී කතාමාලා</p>
+</header>
+
 <div class="container">
-<h1>CHANALK</h1>
+  <div class="subtitle-card">
+    <img src="movie-poster.jpg" alt="Movie Title">
+    <h3>Movie Title (2025)</h3>
+    <p>සිංහල උපසිරැසි සමඟ</p>
+    <a href="download-link.ass" class="download-btn" download>Download Subtitle (.ass)</a>
+  </div>
 
-<!-- Upload Form -->
-<input type="text" id="title" placeholder="Anime Title">
-<input type="text" id="episode" placeholder="Episode / Movie">
-<textarea id="description" placeholder="Anime විස්තර සිංහලෙන්..."></textarea>
-<input type="file" id="subtitleFile" accept=".srt,.vtt,.txt">
-<input type="file" id="imageFile" accept="image/*">
-<button onclick="uploadSubtitle()">Upload Subtitle</button>
+  <div class="subtitle-card">
+    <img src="tv-show-poster.jpg" alt="TV Show Title">
+    <h3>TV Show Title - Season 1, Episode 1</h3>
+    <p>සිංහල උපසිරැසි සමඟ</p>
+    <a href="download-link.ass" class="download-btn" download>Download Subtitle (.ass)</a>
+  </div>
 
-<!-- Subtitles Heading -->
-<input type="text" id="subHeadingInput" placeholder="Subtitles Section Heading" value="Subtitles" oninput="updateHeading()" style="text-align:center; font-weight:bold; margin-top:10px;">
-<h2 id="subHeading">Subtitles</h2>
-
-<div id="subList"></div>
+  <!-- Add more subtitle cards as needed -->
 </div>
 
-<script>
-let subs=[];
-
-function uploadSubtitle(){
-  const title=document.getElementById("title").value;
-  const episode=document.getElementById("episode").value;
-  const description=document.getElementById("description").value;
-  const subtitleFile=document.getElementById("subtitleFile").files[0];
-  const imageFile=document.getElementById("imageFile").files[0];
-
-  if(!subtitleFile){alert("Subtitle file required!"); return;}
-
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=e.target.result;
-    if(imageFile){
-      const imgReader=new FileReader();
-      imgReader.onload=function(ev){
-        const imageURL=ev.target.result;
-        addSub(title, episode, description, subtitleFile.name, text, imageURL);
-      }
-      imgReader.readAsDataURL(imageFile);
-    }else addSub(title, episode, description, subtitleFile.name, text, null);
-  }
-  reader.readAsText(subtitleFile);
-}
-
-function addSub(title, episode, description, filename, text, imageURL){
-  const sub={id:Date.now(), title, episode, description, filename, text, imageURL};
-  subs.unshift(sub);
-  renderSubs();
-  document.getElementById("title").value="";
-  document.getElementById("episode").value="";
-  document.getElementById("description").value="";
-  document.getElementById("subtitleFile").value="";
-  document.getElementById("imageFile").value="";
-  alert("Uploaded!");
-}
-
-function downloadSub(sub){
-  const blob=new Blob([sub.text], {type:"text/plain;charset=utf-8"});
-  const link=document.createElement("a");
-  link.href=URL.createObjectURL(blob);
-  const name=sub.filename.split('.')[0]+".ass";
-  link.download=name;
-  link.click();
-}
-
-function renderSubs(){
-  const container=document.getElementById("subList");
-  container.innerHTML="";
-  subs.forEach(sub=>{
-    const div=document.createElement("div");
-    div.className="sub-card";
-    div.innerHTML=`
-      ${sub.imageURL?`<img src="${sub.imageURL}">`:''}
-      <b>${sub.title}</b> | <i>${sub.episode}</i><br>
-      <p>${sub.description}</p>
-      <div class="subtitle-text">${sub.text}</div>
-      <button onclick='downloadSub(${JSON.stringify(sub)})'>Download .ass</button>
-    `;
-    container.appendChild(div);
-  });
-}
-
-function updateHeading(){
-  const h=document.getElementById("subHeading");
-  const input=document.getElementById("subHeadingInput");
-  h.textContent=input.value||"Subtitles";
-}
-</script>
 </body>
 </html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHANALK Anime</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body {
+  margin:0;
+  font-family: 'Press Start 2P', cursive;
+  background: linear-gradient(to bottom, #0a0f2b, #001022);
+  color: #f1f1f1;
+}
+
+.container { max-width: 700px; margin:auto; padding:20px; }
+header { text-align:center; margin-bottom:20px; }
+header img { max-width:100%; border-radius:15px; box-shadow:0 0 20px #ffcc00;}
+header h1 {
+  font-size:2.5rem;
+  color:#ffcc00;
+  margin-top:10px;
+}
+
+input, textarea, button { width:100%; margin:5px 0; padding:12px; border-radius:12px; border:none; font-family:inherit; font-weight:bold; font-size:0.9rem;}
+button {
+  background: linear-gradient(45deg, #ffcc00, #ff6600);
+  color:black; font-weight:bold; cursor:pointer; box-shadow:0 0 15px #ffcc00;
+  transition: all 0.2s ease;
+}
+button:hover { box-shadow:0 0 25px #ffcc00; transform:scale(1.05);}
+.sub-card {
+  background: linear-gradient(145deg, #1a1f3a, #0c0f2a);
+  padding:15px; border-radius:20px; margin:12px 0;
+  box-shadow:0 0 15px #ffcc0050;
+  transition: all 0.3s ease;
+  overflow:hidden;
+}
+.sub-card:hover { box-shadow:0 0 25px #ffcc0070; transform:translateY(-3px);}
+.sub-card img { max-width:100px; max-height:80px; object-fit:cover; float:left; margin-right:12px; border-radius:15px;}
+.comment-section { margin-top:10px; }
+.comment { background: rgba(255,255,255,0.1); padding:5px 8px; border-radius:10px; margin:3px 0; font-size:0.8rem;}
+.download-btn { background:#33ccff; margin-top:5px; font-weight:bold; transition:all 0.2s ease;}
+.download-btn:hover { background:#00aaff; transform:scale(1.05);}
+.subtitles-title {
+  font-size:1.5rem;
+  color:#ffcc00;
+  margin-top:20px;
+  text-align:center;
+}
+@media (max-width:600px){ .sub-card img { float:none; display:block; margin:auto 0 10px 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <img src="https://upload.wikimedia.org/wikipedia/en/6/6f/One_Piece_Logo.png" alt="One Piece Poster">
+  <h1>CHANALK</h1>
+</header>
+
+<!-- Upload form -->
+<div class="upload-form">
+  <input type="text" id="title" placeholder="Anime Title">
+  <input type="text" id="episode" placeholder="Episode / Movie">
+  <textarea id="description" placeholder="Anime විස්තර සිංහලෙන්..."></textarea>
+  <input type="file" id="subtitleFile" accept=".srt,.vtt,.txt">
+  <input type="file" id="imageFile" accept="image/*">
+  <button onclick="uploadSubtitle()">Upload</button>
+</div>
+
+<!-- Customizable Subtitles Heading -->
+<div style="margin-top:20px;">
+  <input type="text" id="subTitleHeading" placeholder="Enter heading" value="" oninput="updateSubHeading()" style="text-align:center; font-weight:bold; font-size:1.2rem; border-radius:10px; padding:8px;">
+</div>
+<h2 id="subHeading" class="subtitles-title"></h2>
+
+<div id="subList"></div>
+
+</div>
+
+<script>
+let subs = JSON.parse(localStorage.getItem('animeSubs') || '[]');
+
+function uploadSubtitle(){
+  const title = document.getElementById("title").value.trim();
+  const episode = document.getElementById("episode").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const subtitleFile = document.getElementById("subtitleFile").files[0];
+  const imageFile = document.getElementById("imageFile").files[0];
+
+  if(!title || !episode || !subtitleFile){ alert("Title, Episode & Subtitle required!"); return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const subText = e.target.result;
+    let imageURL = null;
+    if(imageFile){
+      const imgReader = new FileReader();
+      imgReader.onload = function(ev){
+        imageURL = ev.target.result;
+        addSub(title, episode, description, subtitleFile.name, subText, imageURL);
+      };
+      imgReader.readAsDataURL(imageFile);
+    }else{
+      addSub(title, episode, description, subtitleFile.name, subText, null);
+    }
+  };
+  reader.readAsText(subtitleFile);
+}
+
+function addSub(title, episode, description, filename, text, imageURL){
+  const sub = {id: Date.now(), title, episode, description, filename, text, imageURL, comments:[]};
+  subs.unshift(sub);
+  localStorage.setItem('animeSubs', JSON.stringify(subs));
+  renderSubs();
+  document.getElementById("title").value="";
+  document.getElementById("episode").value="";
+  document.getElementById("description").value="";
+  document.getElementById("subtitleFile").value="";
+  document.getElementById("imageFile").value="";
+  alert("Uploaded successfully!");
+}
+
+function downloadSub(sub){
+  const blob = new Blob([sub.text], {type:"text/plain"});
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = sub.filename;
+  link.click();
+}
+
+function addComment(subId){
+  const input = document.getElementById("comment-"+subId);
+  if(!input.value.trim()) return;
+  const sub = subs.find(s=>s.id===subId);
+  sub.comments.push(input.value.trim());
+  localStorage.setItem('animeSubs', JSON.stringify(subs));
+  input.value="";
+  renderSubs();
+}
+
+function renderSubs(){
+  const container = document.getElementById("subList");
+  container.innerHTML="";
+  subs.forEach(sub=>{
+    const div = document.createElement("div");
+    div.className="sub-card";
+    div.innerHTML = `
+      ${sub.imageURL ? `<img src="${sub.imageURL}">` : ''}
+      <b>${sub.title}</b> | <i>${sub.episode}</i><br>
+      <p>${sub.description}</p>
+      <button class="download-btn" onclick='downloadSub(${JSON.stringify(sub)})'>Download Subtitle</button>
+      <div class="comment-section">
+        <b>Comments:</b>
+        <div>${sub.comments.map(c=>`<div class="comment">${c}</div>`).join("")}</div>
+        <input type="text" id="comment-${sub.id}" placeholder="Add comment">
+        <button onclick="addComment(${sub.id})">Add</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateSubHeading(){
+  const heading = document.getElementById("subHeading");
+  const input = document.getElementById("subTitleHeading");
+  heading.textContent = input.value || "";
+}
+
+// Initial render
+renderSubs();
+</script>
+
+</body>
+</html>
